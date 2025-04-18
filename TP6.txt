@@ -1,0 +1,237 @@
+PS G:\BIGDATA\TP6> docker run --name cassandra -d cassandra
+Unable to find image 'cassandra:latest' locally
+latest: Pulling from library/cassandra
+07fc3ba9ef45: Pull complete
+f755fa637644: Pull complete
+30a9c22ae099: Pull complete
+3398a057cfd5: Pull complete
+04b08941b8d8: Pull complete
+148144918da9: Pull complete
+aa70336047fc: Pull complete
+Digest: sha256:648243f60690dc49f4ed7e7f8aceda1597ee3aacb427453a235f15480996676e
+6fb455ede4dad088baac9d979ba706ed02d1ce11782eb8d39c326987d2f38a9a
+
+PS G:\BIGDATA\TP6> docker exec -it cassandra cqlsh
+Connected to Test Cluster at 127.0.0.1:9042
+[cqlsh 6.2.0 | Cassandra 5.0.4 | CQL spec 3.4.7 | Native protocol v5]
+Use HELP for help.
+
+cqlsh> CREATE KEYSPACE IF NOT EXISTS resto_NY
+   ... WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor': 1 };
+
+cqlsh> USE resto_NY;
+
+cqlsh:resto_ny> CREATE TABLE Restaurant (
+            ...   id INT,
+            ...   Name TEXT,
+            ...   borough TEXT,
+            ...   BuildingNum TEXT,
+            ...   Street TEXT,
+            ...   ZipCode INT,
+            ...   Phone TEXT,
+            ...   idRestaurant INT,
+            ...   InspectionDate DATE,
+            ...   ViolationCode TEXT,
+            ...   ViolationDescription TEXT,
+            ...   CriticalFlag TEXT,
+            ...   Score INT,
+            ...   Grade TEXT,
+            ...   PRIMARY KEY (idRestaurant, InspectionDate)
+            ... );
+
+cqlsh:resto_ny> CREATE INDEX ON Inspection (Grade);
+
+cqlsh:resto_ny> COPY Restaurant (id, name, borough, buildingnum, street, zipcode, phone, cuisinetype)
+            ... FROM '/restaurants.csv' WITH DELIMITER=',';
+Using 1 child processes
+
+Starting copy of resto_ny.restaurant with columns [id, name, borough, buildingnum, street, zipcode, phone, cui
+sinetype].
+Processed: 25624 rows; Rate:    1484 rows/s; Avg. rate:    3478 rows/s
+25624 rows imported from 1 files in 0 day, 0 hour, 0 minute, and 7.368 seconds (0 skipped).
+
+cqlsh:resto_ny> COPY Inspection (idrestaurant, inspectiondate, violationcode, violationdescription, criticalfl
+ag, score, grade)
+            ... FROM '/restaurants_inspections.csv' WITH DELIMITER=',';
+Using 1 child processes
+
+Starting copy of resto_ny.inspection with columns [idrestaurant, inspectiondate, violationcode, violationdescr
+iption, criticalflag, score, grade].
+Processed: 441712 rows; Rate:    4918 rows/s; Avg. rate:    7333 rows/s
+441712 rows imported from 1 files in 0 day, 0 hour, 1 minute, and 0.239 seconds (0 skipped).
+
+cqlsh:resto_ny> SELECT COUNT(*) FROM Restaurant;
+
+ count
+-------
+ 25624
+
+(1 rows)
+
+Warnings :
+Aggregation query used without partition key
+
+cqlsh:resto_ny> SELECT COUNT(*) FROM Inspection;
+
+ count
+--------
+ 149818
+
+(1 rows)
+
+Warnings :
+Aggregation query used without partition key
+
+
+
+
+
+************************Requests*******************************************
+
+
+
+	*** 1 ***
+
+
+cqlsh:resto_ny> SELECT * FROM Restaurant;
+
+ id       | borough       | buildingnum | cuisinetype                                                      | n
+ame                                             | phone      | street                      | zipcode
+----------+---------------+-------------+------------------------------------------------------------------+--
+------------------------------------------------+------------+-----------------------------+---------
+ 40786914 | STATEN ISLAND |        1465 |                                                         American |  
+                                  BOSTON MARKET | 7188151198 |               FOREST AVENUE |   10302
+ 40366162 |        QUEENS |       11909 |                                                         American |  
+                               LENIHAN'S SALOON | 7188469770 |             ATLANTIC AVENUE |   11418
+ 41692194 |     MANHATTAN |         360 |                                                             Thai |  
+                                  BANGKOK HOUSE | 2125415943 |            WEST   46 STREET |   10036
+ 41430956 |      BROOKLYN |        2225 |                                                        Caribbean |  
+                              TJ'S TASTY CORNER | 7184844783 |               TILDEN AVENUE |   11226
+ 41395531 |        QUEENS |         126 |                                                         American |  
+                              NATHAN'S HOT DOGS | 7185958100 |            ROOSEVELT AVENUE |   11368
+ 50005384 | STATEN ISLAND |         271 |                                                          Chinese |  
+
+
+	*** 2 ***
+
+
+cqlsh:resto_ny> SELECT name FROM Restaurant;
+ name
+--------------------------------------------------
+                                    BOSTON MARKET
+                                 LENIHAN'S SALOON
+                                    BANGKOK HOUSE
+                                TJ'S TASTY CORNER
+                                NATHAN'S HOT DOGS
+                                      YUMMY YUMMY
+                                   KING'S KITCHEN
+                                            CESCA
+                EL GUANACO RESTAURANT & PUPUSERIA
+
+
+	*** 3 ***
+
+
+cqlsh:resto_ny> SELECT name, borough FROM Restaurant WHERE id = 41569764;
+
+ name    | borough
+---------+----------
+ BACCHUS | BROOKLYN
+
+
+	*** 4 ***
+
+
+cqlsh:resto_ny> SELECT inspectiondate, grade 
+            ... FROM Inspection
+            ... WHERE idrestaurant = 41569764;
+
+ inspectiondate | grade
+----------------+-------
+     2013-06-27 |  null
+     2013-07-08 |     A
+     2013-12-26 |  null
+     2014-02-05 |     A
+     2014-07-17 |  null
+     2014-08-06 |     A
+     2015-01-08 |     A
+     2016-02-25 |     A
+
+
+	*** 5 ***
+
+
+cqlsh:resto_ny> SELECT name FROM Restaurant WHERE CuisineType = 'French' ALLOW FILTERING;
+
+ name
+--------------------------------
+                        MATISSE
+                        ALMANAC
+                   TOUT VA BIEN
+                          FELIX
+             CREPES ON COLUMBUS
+               THE BARONESS BAR
+                     THE SIMONE
+                      FP BAKERY
+                  VIN ET FLEURS
+       CAFE BOULUD/BAR PLEIADES
+
+
+	*** 6 ***	
+
+
+cqlsh:resto_ny> SELECT name FROM Restaurant WHERE borough = 'BROOKLYN' ALLOW FILTERING;
+
+ name
+--------------------------------------------
+                          TJ'S TASTY CORNER
+                             KING'S KITCHEN
+                         LEO'S DELI & GRILL
+                           JIN SUSHI & THAI
+                        CROWN FRIED CHICKEN
+                            BROOKLYN CAFE 1
+                       CRESCENT COFFEE SHOP
+                LA ROYALE BEER BURGER HOUSE
+                         CONNECTICUT MUFFIN
+                        GREENSTREETS SALADS
+
+	*** 7 ***
+
+
+cqlsh:resto_ny> SELECT grade, score 
+            ... FROM Inspection
+            ... WHERE idrestaurant = 41569764 AND score >= 10 ALLOW FILTERING;
+
+ grade | score
+-------+-------
+  null |    19
+     A |    10
+
+	*** 8 ***
+
+cqlsh:resto_ny> SELECT grade
+            ... FROM Inspection
+            ... WHERE score > 30 AND grade IN ('A', 'B', 'C') ALLOW FILTERING;
+
+ grade
+-------
+     C
+     C
+     C
+     C
+     C
+     C
+     C
+     C
+     C
+     C
+
+	*** 9 ***
+
+cqlsh:resto_ny> SELECT COUNT(*) 
+            ... FROM Inspection 
+            ... WHERE score > 30 AND grade IN ('A', 'B', 'C') ALLOW FILTERING;
+
+ count
+-------
+   971

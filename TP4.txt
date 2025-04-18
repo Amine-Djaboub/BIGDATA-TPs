@@ -1,0 +1,45 @@
+	*** Making a network and 3 containers ***
+
+G:\BIGDATA\TP3>docker network create my-custom-network
+95753adbaf6238ba635118705eeac8fc0d0c99b853540ac5c8278312ceec50a0
+
+G:\BIGDATA\TP3>docker run -d --name container1 --network my-custom-network aminedjaboub/bigdata-tp3
+Unable to find image 'aminedjaboub/bigdata-tp3:latest' locally
+latest: Pulling from aminedjaboub/bigdata-tp3
+e4947e220f1e: Pull complete
+6e909acdb790: Pull complete
+a8053d65de8e: Pull complete
+806331b0d260: Pull complete
+ce054015c4fb: Pull complete
+4aba83fac924: Pull complete
+395b832d0848: Pull complete
+Digest: sha256:4a11bf90e270fcad140dd63ea891b932098269879cfe13b22044f368353065ff
+Status: Downloaded newer image for aminedjaboub/bigdata-tp3:latest
+bda136b30aa88426c2b904dd58f18c57301bbe0423e5ff61b2cf18f864e8cad3
+
+G:\BIGDATA\TP3>docker run -d --name container2 --network my-custom-network aminedjaboub/bigdata-tp3
+ff8b8ff695f8ae8a40a720a8fff1cdd06d425625dfc8a321c9dd9de5301cf670
+
+G:\BIGDATA\TP3>docker run -d --name container3 --network my-custom-network aminedjaboub/bigdata-tp3
+563ece836ee7b5b7d43ef820048dfc8412f89d28b2821819158fd9b80a6b6268
+
+	*** Testing connection from container 1 to container 2 ***
+
+>docker exec -it container1 bash
+root@bda136b30aa8:/app# ping container2
+PING container2 (172.18.0.3) 56(84) bytes of data.
+64 bytes from container2.my-custom-network (172.18.0.3): icmp_seq=1 ttl=64 time=0.072 ms
+64 bytes from container2.my-custom-network (172.18.0.3): icmp_seq=2 ttl=64 time=0.090 ms
+64 bytes from container2.my-custom-network (172.18.0.3): icmp_seq=3 ttl=64 time=0.054 ms
+64 bytes from container2.my-custom-network (172.18.0.3): icmp_seq=4 ttl=64 time=0.059 ms
+
+	*** Testing connection from container 2 to container 3 ***
+
+>docker exec -it container2 bash
+root@ff8b8ff695f8:/app# ping container3
+PING container3 (172.18.0.4) 56(84) bytes of data.
+64 bytes from container3.my-custom-network (172.18.0.4): icmp_seq=1 ttl=64 time=0.074 ms
+64 bytes from container3.my-custom-network (172.18.0.4): icmp_seq=2 ttl=64 time=0.086 ms
+64 bytes from container3.my-custom-network (172.18.0.4): icmp_seq=3 ttl=64 time=0.086 ms
+64 bytes from container3.my-custom-network (172.18.0.4): icmp_seq=4 ttl=64 time=0.169 ms
+64 bytes from container3.my-custom-network (172.18.0.4): icmp_seq=5 ttl=64 time=0.056 ms
