@@ -1,0 +1,156 @@
+	***Making db named "info" ***
+
+>use info
+switched to db info
+
+	***Adding products***
+
+> db.products.insert({
+...   nom: "Macbook Pro",
+...   fabriquant: "Apple",
+...   prix: 11435.99,
+...   options: [
+...     "Intel Core i5",
+...     "Retina Display",
+...     "Long life battery"
+...   ]
+... });
+WriteResult({ "nInserted" : 1 })
+> db.products.insert({
+...   nom: "Macbook Air",
+...   fabriquant: "Apple",
+...   prix: 125794.73,
+...   ultrabook: true,
+...   options: [
+...     "Intel Core i7",
+...     "SSD",
+...     "Long life battery"
+...   ]
+... });
+WriteResult({ "nInserted" : 1 })
+> db.products.insert({
+...   nom: "Thinkpad X230",
+...   fabriquant: "Lenovo",
+...   prix: 114358.74,
+...   ultrabook: true,
+...   options: [
+...     "Intel Core i5",
+...     "SSD",
+...     "Long life battery"
+...   ]
+... });
+WriteResult({ "nInserted" : 1 })
+
+	*** Showing first product ***
+
+> db.products.findOne();
+{
+        "_id" : ObjectId("67fa277d12140fbf8c7cf644"),
+        "nom" : "Macbook Pro",
+        "fabriquant" : "Apple",
+        "prix" : 11435.99,
+        "options" : [
+                "Intel Core i5",
+                "Retina Display",
+                "Long life battery"
+        ]
+}
+
+	*** Getting ThinkPad's id then retreiving it using the id ***
+
+> db.products.find(   { nom: "Thinkpad X230" },   { _id: 1 } );
+{ "_id" : ObjectId("67fa27d112140fbf8c7cf646") }
+> db.products.findOne({ _id: ObjectId("67fa27d112140fbf8c7cf646") });
+{
+        "_id" : ObjectId("67fa27d112140fbf8c7cf646"),
+        "nom" : "Thinkpad X230",
+        "fabriquant" : "Lenovo",
+        "prix" : 114358.74,
+        "ultrabook" : true,
+        "options" : [
+                "Intel Core i5",
+                "SSD",
+                "Long life battery"
+        ]
+}
+
+	*** Finding the products that are more expensive than 13723 DA***
+
+> db.products.find({ prix: { $gt: 13723 } }).pretty();
+{
+        "_id" : ObjectId("67fa27c712140fbf8c7cf645"),
+        "nom" : "Macbook Air",
+        "fabriquant" : "Apple",
+        "prix" : 125794.73,
+        "ultrabook" : true,
+        "options" : [
+                "Intel Core i7",
+                "SSD",
+                "Long life battery"
+        ]
+}
+{
+        "_id" : ObjectId("67fa27d112140fbf8c7cf646"),
+        "nom" : "Thinkpad X230",
+        "fabriquant" : "Lenovo",
+        "prix" : 114358.74,
+        "ultrabook" : true,
+        "options" : [
+                "Intel Core i5",
+                "SSD",
+                "Long life battery"
+        ]
+}
+
+	*** Getting the first product thats name starts with Macbook***
+
+> db.products.findOne({ nom: /^Macbook/ });
+{
+        "_id" : ObjectId("67fa277d12140fbf8c7cf644"),
+        "nom" : "Macbook Pro",
+        "fabriquant" : "Apple",
+        "prix" : 11435.99,
+        "options" : [
+                "Intel Core i5",
+                "Retina Display",
+                "Long life battery"
+        ]
+}
+
+	*** Getting all the products whose names start with Macbook***
+
+> db.products.find({ nom: /^Macbook/ }).pretty();
+{
+        "_id" : ObjectId("67fa277d12140fbf8c7cf644"),
+        "nom" : "Macbook Pro",
+        "fabriquant" : "Apple",
+        "prix" : 11435.99,
+        "options" : [
+                "Intel Core i5",
+                "Retina Display",
+                "Long life battery"
+        ]
+}
+{
+        "_id" : ObjectId("67fa27c712140fbf8c7cf645"),
+        "nom" : "Macbook Air",
+        "fabriquant" : "Apple",
+        "prix" : 125794.73,
+        "ultrabook" : true,
+        "options" : [
+                "Intel Core i7",
+                "SSD",
+                "Long life battery"
+        ]
+}
+
+	*** Removing all products manufactured by Apple ***
+
+> db.products.remove({ fabriquant: /^Apple/ });
+WriteResult({ "nRemoved" : 2 })
+
+	*** Removing the Thinkpad using only its id ***
+
+> db.products.remove({ _id: ObjectId("67fa27d112140fbf8c7cf646") });
+WriteResult({ "nRemoved" : 1 })
+
