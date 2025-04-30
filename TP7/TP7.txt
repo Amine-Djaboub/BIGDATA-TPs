@@ -1,0 +1,95 @@
+	*** Making Topic ***
+
+smolcheetah@DESKTOP-7JDHND9:~/kafka_2.13-3.6.0$ bin/kafka-topics.sh --create \
+>   --topic my-first-topic \
+>   --bootstrap-server localhost:9092 \
+>   --partitions 1 \
+>   --replication-factor 1
+
+Created topic my-first-topic.
+
+
+
+
+	*** Exemple Producteur Consommateur ***
+
+
+
+** Producer side **
+
+smolcheetah@DESKTOP-7JDHND9:~$ cd ~/kafka_2.13-3.6.0
+smolcheetah@DESKTOP-7JDHND9:~/kafka_2.13-3.6.0$ bin/kafka-console-producer.sh --topic my-first-topic --bootstrap-server localhost:9092
+
+>>hello kafka
+this is a test
+>>show this message to consumer.
+>hello, I am producer
+>
+>test
+>do you read
+>1234
+
+
+
+
+** Consumer side **
+
+smolcheetah@DESKTOP-7JDHND9:~$ cd ~/kafka_2.13-3.6.0
+smolcheetah@DESKTOP-7JDHND9:~/kafka_2.13-3.6.0$ bin/kafka-console-consumer.sh --topic my-first-topic --from-beginning --bootstrap-server localhost:9092
+
+
+hello kafka
+this is a test
+show this message to consumer.
+hello, I am producer
+
+test
+do you read
+1234
+
+
+
+
+	*** Making brokers ***
+
+smolcheetah@DESKTOP-7JDHND9:~/kafka_2.13-3.6.0/config$ cp server.properties server-1.properties
+smolcheetah@DESKTOP-7JDHND9:~/kafka_2.13-3.6.0/config$ cp server.properties server-2.properties
+smolcheetah@DESKTOP-7JDHND9:~/kafka_2.13-3.6.0/config$ nano server-1.properties
+   (changed:	broker.id=1	listeners=PLAINTEXT://localhost:9093	log.dirs=/tmp/kafka-logs-1	)
+smolcheetah@DESKTOP-7JDHND9:~/kafka_2.13-3.6.0/config$ nano server-2.properties
+   (changed:	broker.id=2	listeners=PLAINTEXT://localhost:9094	log.dirs=/tmp/kafka-logs-2	)
+
+** Broker 1 **
+
+smolcheetah@DESKTOP-7JDHND9:~/kafka_2.13-3.6.0/config$ cd ~/kafka_2.13-3.6.0
+smolcheetah@DESKTOP-7JDHND9:~/kafka_2.13-3.6.0$ bin/kafka-server-start.sh config/server-1.properties
+
+** Broker 2 **
+
+smolcheetah@DESKTOP-7JDHND9:~$ cd ~/kafka_2.13-3.6.0
+smolcheetah@DESKTOP-7JDHND9:~/kafka_2.13-3.6.0$ bin/kafka-server-start.sh config/server-2.properties
+
+** check for replication **
+
+smolcheetah@DESKTOP-7JDHND9:~/kafka_2.13-3.6.0$ bin/kafka-topics.sh --create \
+>   --topic replicated-topic \
+>   --bootstrap-server localhost:9092 \
+>   --partitions 1 \
+>   --replication-factor 3
+
+Created topic replicated-topic.
+smolcheetah@DESKTOP-7JDHND9:~/kafka_2.13-3.6.0$ bin/kafka-topics.sh --describe --topic replicated-topic --bootstrap-server localhost:9092
+Topic: replicated-topic TopicId: Zf4zl4bPSSubfzrRggxiiw PartitionCount: 1       ReplicationFactor: 3   Configs:
+        Topic: replicated-topic Partition: 0    Leader: 2       Replicas: 2,1,0 Isr: 2,1,0
+
+
+	*** simulation ***
+
+smolcheetah@DESKTOP-7JDHND9:~/kafka_2.13-3.6.0$ bin/kafka-console-consumer.sh --bootstrap-server 192.168.200.198:9092 --topic iot-sensor-data --from-beginning
+test
+{"temperature": 27.41, "humidity": 58.35, "pressure": 1016.29, "timestamp": "2025-04-30 17:46:26"}
+{"temperature": 22.75, "humidity": 62.72, "pressure": 1013.52, "timestamp": "2025-04-30 17:46:28"}
+{"temperature": 27.04, "humidity": 69.9, "pressure": 1019.55, "timestamp": "2025-04-30 17:46:30"}
+{"temperature": 26.15, "humidity": 65.56, "pressure": 1008.55, "timestamp": "2025-04-30 17:46:32"}
+{"temperature": 23.9, "humidity": 57.36, "pressure": 1019.7, "timestamp": "2025-04-30 17:46:34"}
+{"temperature": 20.69, "humidity": 65.16, "pressure": 1015.91, "timestamp": "2025-04-30 17:46:36"}
