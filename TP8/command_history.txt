@@ -1,0 +1,11 @@
+    1  ./start-hadoop.sh
+    2  hdfs dfs -mkdir -p /user/root/input
+    3  hdfs dfs -put purchases.txt input
+    4  hdfs dfs -ls input
+    5  hdfs dfs -tail input/purchases.txt
+    6  hadoop jar $HADOOP_HOME/share/hadoop/mapreduce/hadoop-mapreduce-examples-*.jar wordcount input output
+    7  hdfs dfs -ls output
+    8  hdfs dfs -cat output/part-r-00000
+    9  hdfs dfs -rm -r output
+   10  history
+   11  history > command_history.txt
