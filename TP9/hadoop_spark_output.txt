@@ -1,0 +1,167 @@
+
+Microsoft Windows [Version 10.0.19045.4170]
+(c) Microsoft Corporation. All rights reserved.
+Microsoft Windows [Version 10.0.19045.4170]
+(c) Microsoft Corporation. All rights reserved.
+
+C:\Users\Makam-TECH>docker start hadoop-master hadoop-worker1 hadoop-worker2
+hadoop-master
+hadoop-worker1
+hadoop-worker2
+
+C:\Users\Makam-TECH>docker exec -it hadoop-master bash
+root@hadoop-master:~# ./start-hadoop.sh
+
+
+Starting namenodes on [hadoop-master]
+hadoop-master: Warning: Permanently added 'hadoop-master' (ED25519) to the list of known hosts.
+hadoop-master: WARNING: HADOOP_NAMENODE_OPTS has been replaced by HDFS_NAMENODE_OPTS. Using value of HADOOP_NAMENODE_OPTS.
+Starting datanodes
+WARNING: HADOOP_SECURE_DN_LOG_DIR has been replaced by HADOOP_SECURE_LOG_DIR. Using value of HADOOP_SECURE_DN_LOG_DIR.
+hadoop-worker2: Warning: Permanently added 'hadoop-worker2' (ED25519) to the list of known hosts.
+hadoop-worker1: Warning: Permanently added 'hadoop-worker1' (ED25519) to the list of known hosts.
+hadoop-worker2: WARNING: HADOOP_SECURE_DN_LOG_DIR has been replaced by HADOOP_SECURE_LOG_DIR. Using value of HADOOP_SECURE_DN_LOG_DIR.
+hadoop-worker2: WARNING: HADOOP_DATANODE_OPTS has been replaced by HDFS_DATANODE_OPTS. Using value of HADOOP_DATANODE_OPTS.
+hadoop-worker1: WARNING: HADOOP_SECURE_DN_LOG_DIR has been replaced by HADOOP_SECURE_LOG_DIR. Using value of HADOOP_SECURE_DN_LOG_DIR.
+hadoop-worker1: WARNING: HADOOP_DATANODE_OPTS has been replaced by HDFS_DATANODE_OPTS. Using value of HADOOP_DATANODE_OPTS.
+Starting secondary namenodes [hadoop-master]
+hadoop-master: Warning: Permanently added 'hadoop-master' (ED25519) to the list of known hosts.
+hadoop-master: WARNING: HADOOP_SECONDARYNAMENODE_OPTS has been replaced by HDFS_SECONDARYNAMENODE_OPTS. Using value of HADOOP_SECONDARYNAMENODE_OPTS.
+
+
+WARNING: YARN_CONF_DIR has been replaced by HADOOP_CONF_DIR. Using value of YARN_CONF_DIR.
+Starting resourcemanager
+Starting nodemanagers
+hadoop-worker2: Warning: Permanently added 'hadoop-worker2' (ED25519) to the list of known hosts.
+hadoop-worker1: Warning: Permanently added 'hadoop-worker1' (ED25519) to the list of known hosts.
+
+
+root@hadoop-master:~# echo "Hello Spark Wordcount!" > file1.txt
+root@hadoop-master:~# echo "Hello Hadoop Also :)" >> file1.txt
+root@hadoop-master:~# hdfs dfs -put file1.txt
+root@hadoop-master:~# spark-shell
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+25/05/02 23:05:29 WARN Client: Neither spark.yarn.jars nor spark.yarn.archive is set, falling back to uploading libraries under SPARK_HOME.
+Spark context Web UI available at http://hadoop-master:4040
+Spark context available as 'sc' (master = yarn, app id = application_1746227084934_0001).
+Spark session available as 'spark'.
+Welcome to
+      ____              __
+     / __/__  ___ _____/ /__
+    _\ \/ _ \/ _ / __/  '_/
+   /___/ .__/\_,_/_/ /_/\_\   version 3.5.0
+      /_/
+
+Using Scala version 2.12.18 (OpenJDK 64-Bit Server VM, Java 1.8.0_402)
+Type in expressions to have them evaluated.
+Type :help for more information.
+
+scala> val lines = sc.textFile("file1.txt")
+lines: org.apache.spark.rdd.RDD[String] = file1.txt MapPartitionsRDD[1] at textFile at <console>:23
+
+scala> val words = lines.flatMap(_.split("\\s+"))
+words: org.apache.spark.rdd.RDD[String] = MapPartitionsRDD[2] at flatMap at <console>:23
+
+scala> val wc = words.map(w => (w, 1)).reduceByKey(_ + _)
+wc: org.apache.spark.rdd.RDD[(String, Int)] = ShuffledRDD[4] at reduceByKey at <console>:23
+
+scala> wc.saveAsTextFile("file1.count")
+
+scala> hdfs dfs -get file1.count
+<console>:1: error: ';' expected but '.' found.
+       hdfs dfs -get file1.count
+                          ^
+
+scala> hdfs dfs -get file1.count
+<console>:1: error: ';' expected but '.' found.
+       hdfs dfs -get file1.count
+                          ^
+
+scala> :quit
+root@hadoop-master:~# scala> hdfs dfs -get file1.count
+bash: hdfs: Is a directory
+root@hadoop-master:~# <console>:1: error: ';' expected but '.' found.
+bash: console: No such file or directory
+root@hadoop-master:~#        hdfs dfs -get file1.count
+root@hadoop-master:~# cat file1.count/*
+(Hello,2)
+(Wordcount!,1)
+(Spark,1)
+(:),1)
+(Also,1)
+(Hadoop,1)
+root@hadoop-master:~# val docs = sc.textFile("file1.txt")
+bash: syntax error near unexpected token ('
+root@hadoop-master:~# val lower = docs.map(_.toLowerCase)
+bash: syntax error near unexpected token ('
+root@hadoop-master:~# hdfs dfs -mkdir /streaming
+root@hadoop-master:~# spark-shell
+Setting default log level to "WARN".
+To adjust logging level use sc.setLogLevel(newLevel). For SparkR, use setLogLevel(newLevel).
+25/05/02 23:46:49 WARN Client: Neither spark.yarn.jars nor spark.yarn.archive is set, falling back to uploading libraries under SPARK_HOME.
+Spark context Web UI available at http://hadoop-master:4040
+Spark context available as 'sc' (master = yarn, app id = application_1746227084934_0003).
+Spark session available as 'spark'.
+Welcome to
+      ____              __
+     / __/__  ___ _____/ /__
+    _\ \/ _ \/ _ / __/  '_/
+   /___/ .__/\_,_/_/ /_/\_\   version 3.5.0
+      /_/
+
+Using Scala version 2.12.18 (OpenJDK 64-Bit Server VM, Java 1.8.0_402)
+Type in expressions to have them evaluated.
+Type :help for more information.
+
+scala> import org.apache.spark.streaming._
+import org.apache.spark.streaming._
+
+scala> val ssc = new StreamingContext(sc, Seconds(5))
+warning: one deprecation (since Spark 3.4.0); for details, enable :setting -deprecation' or :replay -deprecation'
+ssc: org.apache.spark.streaming.StreamingContext = org.apache.spark.streaming.StreamingContext@2b749404
+
+scala> val lines = ssc.textFileStream("streaming/")
+lines: org.apache.spark.streaming.dstream.DStream[String] = org.apache.spark.streaming.dstream.MappedDStream@465d9cce
+
+scala> val words = lines.flatMap(_.split("\\s+"))
+words: org.apache.spark.streaming.dstream.DStream[String] = org.apache.spark.streaming.dstream.FlatMappedDStream@1d2fd73c
+
+scala> val pairs = words.map(word => (word, 1))
+pairs: org.apache.spark.streaming.dstream.DStream[(String, Int)] = org.apache.spark.streaming.dstream.MappedDStream@53a95744
+
+scala> val counts = pairs.reduceByKey(_ + _)
+counts: org.apache.spark.streaming.dstream.DStream[(String, Int)] = org.apache.spark.streaming.dstream.ShuffledDStream@57cd757a
+
+scala> counts.print()
+
+scala> ssc.start()
+
+scala> ssc.awaitTermination()
+-------------------------------------------
+Time: 1746229680000 ms
+-------------------------------------------
+
+-------------------------------------------
+Time: 1746230340000 ms
+-------------------------------------------
+
+-------------------------------------------
+Time: 1746230345000 ms
+-------------------------------------------
+(hello,1)
+(streaming,1)
+(test,1)
+(spark,1)
+
+-------------------------------------------
+Time: 1746230350000 ms
+-------------------------------------------
+
+-------------------------------------------
+Time: 1746230355000 ms
+-------------------------------------------
+
+
+
+scala> root@hadoop-master:~#
